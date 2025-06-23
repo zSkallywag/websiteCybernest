@@ -1,5 +1,6 @@
 {
   "name": "cybernest-website",
+  "homepage": "https://zskallywag.github.io/websiteCybernest",
   "private": true,
   "version": "0.0.0",
   "type": "module",
