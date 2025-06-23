@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary-dark: #1c002c;
+  --color-primary: #2e005f;
+  --color-accent: #a83cf0;
+  --color-accent-bright: #c000ff;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-gradient-to-br from-primary-dark to-primary text-white min-h-screen font-sans;
+  overflow-x: hidden;
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-accent hover:bg-accent-bright text-white px-6 py-3 rounded-md font-medium transition-all duration-300 inline-block hover:shadow-glow;
+  }
+
+  .btn-outline {
+    @apply border-2 border-accent text-white hover:bg-accent/20 px-6 py-[10px] rounded-md font-medium transition-all duration-300 inline-block;
+  }
+
+  .heading-gradient {
+    @apply bg-gradient-to-r from-white via-purple-100 to-accent-bright bg-clip-text text-transparent;
+  }
+  
+  .shadow-glow {
+    @apply shadow-[0_0_15px_rgba(192,0,255,0.5)];
+  }
+  
+  .border-glow {
+    @apply border border-accent shadow-[0_0_10px_rgba(192,0,255,0.3)];
+  }
+  
+  .card-gradient {
+    @apply bg-gradient-to-br from-primary-dark/80 to-primary/80 backdrop-blur-sm;
+  }
+  
+  .grid-bg {
+    background-image: radial-gradient(rgba(168, 60, 240, 0.1) 1px, transparent 1px);
+    background-size: 30px 30px;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-primary-dark;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-accent rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-accent-bright;
+}
