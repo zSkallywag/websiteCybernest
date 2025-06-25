@@ -2,7 +2,6 @@ import { useState, FormEvent } from 'react';
 import { motion } from 'framer-motion';
 import { Send, CheckCircle, AlertCircle } from 'lucide-react';
 import Button from './Button';
-import { supabase } from '../lib/supabase';
 
 const ContactForm = () => {
   const [formData, setFormData] = useState({
@@ -79,28 +78,45 @@ const ContactForm = () => {
     setSubmitError(null);
     
     try {
-      // Call the Supabase Edge Function
-      const { data, error } = await supabase.functions.invoke('send-contact-email', {
-        body: {
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          company: formData.company,
-          message: formData.message,
-          service: formData.service,
-        },
-      });
+      // Map service codes to readable names
+      const serviceNames: Record<string, string> = {
+        'general': 'Consulenza Generale',
+        'cybersecurity': 'Cybersecurity',
+        'infrastructure': 'Infrastrutture IT',
+        'digital': 'Comunicazione Digitale',
+        'data': 'Gestione Dati',
+        'consulting': 'Consulenza Informatica'
+      };
+      
+      const serviceName = serviceNames[formData.service] || 'Non specificato';
+      
+      // Create email content
+      const emailBody = `
+Nuovo messaggio di contatto da CyberNest Website
 
-      if (error) {
-        console.error('Supabase function error:', error);
-        throw new Error(error.message || 'Errore nell\'invio del messaggio');
-      }
+Nome: ${formData.name}
+Email: ${formData.email}
+${formData.phone ? `Telefono: ${formData.phone}` : ''}
+${formData.company ? `Azienda: ${formData.company}` : ''}
+Servizio di interesse: ${serviceName}
 
-      if (!data?.success) {
-        throw new Error(data?.error || 'Errore nell\'invio del messaggio');
-      }
+Messaggio:
+${formData.message}
 
-      // Success
+---
+Inviato dal form di contatto del sito web CyberNest
+Data: ${new Date().toLocaleString('it-IT', { timeZone: 'Europe/Rome' })}
+      `.trim();
+      
+      // Create mailto link
+      const subject = encodeURIComponent(`Nuovo contatto da ${formData.name} - ${serviceName}`);
+      const body = encodeURIComponent(emailBody);
+      const mailtoLink = `mailto:info@cybernest.it?subject=${subject}&body=${body}`;
+      
+      // Open email client
+      window.location.href = mailtoLink;
+      
+      // Show success message
       setIsSubmitted(true);
       
       // Reset form after submission
@@ -115,12 +131,8 @@ const ContactForm = () => {
       });
       
     } catch (error) {
-      console.error('Error sending email:', error);
-      setSubmitError(
-        error instanceof Error 
-          ? error.message 
-          : 'Si è verificato un errore durante l\'invio del messaggio. Riprova più tardi.'
-      );
+      console.error('Error preparing email:', error);
+      setSubmitError('Si è verificato un errore durante la preparazione del messaggio.');
     } finally {
       setIsSubmitting(false);
     }
@@ -138,12 +150,13 @@ const ContactForm = () => {
           className="flex flex-col items-center justify-center py-8 text-center"
         >
           <CheckCircle size={64} className="text-green-400 mb-4" />
-          <h3 className="text-2xl font-bold mb-2">Messaggio inviato con successo!</h3>
+          <h3 className="text-2xl font-bold mb-2">Messaggio preparato con successo!</h3>
           <p className="text-gray-300 mb-4">
-            Grazie per averci contattato. Abbiamo ricevuto la tua richiesta e ti risponderemo il prima possibile.
+            Il tuo client email dovrebbe aprirsi automaticamente con il messaggio precompilato. 
+            Se non si apre, puoi inviare manualmente un'email a <a href="mailto:info@cybernest.it" className="text-accent-bright hover:underline">info@cybernest.it</a>.
           </p>
           <p className="text-sm text-gray-400 mb-6">
-            Riceverai anche un'email di conferma all'indirizzo che hai fornito.
+            Includi nel messaggio tutti i dettagli che hai inserito nel form.
           </p>
           <Button 
             variant="primary"
@@ -162,7 +175,7 @@ const ContactForm = () => {
             >
               <AlertCircle size={20} className="text-red-400 mr-3 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-red-400 font-medium">Errore nell'invio del messaggio</p>
+                <p className="text-red-400 font-medium">Errore nella preparazione del messaggio</p>
                 <p className="text-red-300 text-sm mt-1">{submitError}</p>
               </div>
             </motion.div>
@@ -309,7 +322,7 @@ const ContactForm = () => {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Invio in corso...
+                  Preparazione in corso...
                 </div>
               ) : (
                 'Invia Messaggio'
